@@ -74,7 +74,7 @@ public class CpuController  : ControllerBase
             host = hostname,
             os = osName,
             kernel = kernelVersion,
-            temp = cpuTemp
+            tempCpu = cpuTemp
         });
     }
     
