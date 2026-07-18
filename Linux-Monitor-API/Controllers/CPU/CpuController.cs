@@ -35,7 +35,8 @@ public class CpuController  : ControllerBase
         return Ok(new
         {
             usage = Math.Round(usage, 2),
-            name = cpuName
+            name = cpuName,
+            core = cpuCore
         });
     }
     
