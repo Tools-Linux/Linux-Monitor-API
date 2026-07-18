@@ -6,10 +6,10 @@ builder.Services.AddControllers();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("React", policy =>
+    options.AddDefaultPolicy(policy =>
     {
         policy
-            .AllowAnyOrigin()
+            .WithOrigins("http://192.168.1.130:5173")
             .AllowAnyHeader()
             .AllowAnyMethod();
     });
