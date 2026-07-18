@@ -54,6 +54,12 @@ public class CpuController  : ControllerBase
         }
         
         string hostname = Environment.MachineName;
+        string osName = System.IO.File.ReadLines("/etc/os-release")
+            .FirstOrDefault(l => l.StartsWith("PRETTY_NAME="))
+            ?.Split('=', 2)[1]
+            .Trim('"') ?? "Unknown";
+        
+        string kernelVersion = System.IO.File.ReadAllText("/proc/sys/kernel/osrelease").Trim();
         
         return Ok(new
         {
@@ -64,6 +70,8 @@ public class CpuController  : ControllerBase
             processes = processcount,
             threads = threadCount,
             host = hostname,
+            os = osName,
+            kernel = kernelVersion,
         });
     }
     
