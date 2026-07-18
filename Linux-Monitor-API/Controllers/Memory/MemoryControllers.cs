@@ -39,6 +39,10 @@ public class MemoryControllers : ControllerBase
     private static long ParseKb(string line)
     {
         var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
-        return  long.Parse(parts[0]);
+
+        if (parts.Length < 2)
+            throw new FormatException($"Invalid meminfo line: {line}");
+
+        return long.Parse(parts[1]);
     }
 }
