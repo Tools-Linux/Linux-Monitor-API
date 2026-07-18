@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
@@ -31,12 +32,19 @@ public class CpuController  : ControllerBase
             .FirstOrDefault(l => l.StartsWith("cpu family"))
             ?.Split(':', 2)[1]
             .Trim() ?? "Unknown";
+
+        string architecture = RuntimeInformation.ProcessArchitecture.ToString();
+
+        int processcount = Directory.EnumerateDirectories("/proc")
+            .Count(dir => int.TryParse(Path.GetFileName(dir), out _));
         
         return Ok(new
         {
             usage = Math.Round(usage, 2),
             name = cpuName,
-            core = cpuCore
+            core = cpuCore,
+            arch = architecture,
+            processes = processcount,
         });
     }
     
