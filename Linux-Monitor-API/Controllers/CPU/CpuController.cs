@@ -38,7 +38,6 @@ public class CpuController  : ControllerBase
         int processcount = Directory.EnumerateDirectories("/proc")
             .Count(dir => int.TryParse(Path.GetFileName(dir), out _));
         
-        
         int threadCount = 0;
 
         foreach (var procDir in Directory.EnumerateDirectories("/proc"))
@@ -54,6 +53,8 @@ public class CpuController  : ControllerBase
             }
         }
         
+        string hostname = Environment.MachineName;
+        
         return Ok(new
         {
             usage = Math.Round(usage, 2),
@@ -62,6 +63,7 @@ public class CpuController  : ControllerBase
             arch = architecture,
             processes = processcount,
             threads = threadCount,
+            host = hostname,
         });
     }
     
