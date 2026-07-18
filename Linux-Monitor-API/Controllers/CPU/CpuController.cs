@@ -61,28 +61,7 @@ public class CpuController  : ControllerBase
         
         string kernelVersion = System.IO.File.ReadAllText("/proc/sys/kernel/osrelease").Trim();
         
-        var thermalZones = Directory.GetDirectories("/sys/class/thermal");
-
-        var temperatures = new List<object>();
-
-        foreach (var zone in thermalZones)
-        {
-            var typeFile = Path.Combine(zone, "type");
-            var tempFile = Path.Combine(zone, "temp");
-
-            if (!System.IO.File.Exists(typeFile) || !System.IO.File.Exists(tempFile))
-                continue;
-
-            string type = System.IO.File.ReadAllText(typeFile).Trim();
-            double temp = int.Parse(System.IO.File.ReadAllText(tempFile)) / 1000.0;
-
-            temperatures.Add(new
-            {
-                zone = Path.GetFileName(zone),
-                type,
-                temperature = temp
-            });
-        }
+        double cpuTemp = int.Parse(System.IO.File.ReadAllText("/sys/class/thermal/thermal_zone0/temp")) / 1000.0;
 
         return Ok(new
         {
@@ -95,7 +74,7 @@ public class CpuController  : ControllerBase
             host = hostname,
             os = osName,
             kernel = kernelVersion,
-            temp = temperatures
+            temp = cpuTemp
         });
     }
     
