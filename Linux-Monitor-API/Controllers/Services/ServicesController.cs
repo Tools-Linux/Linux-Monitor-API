@@ -13,7 +13,7 @@ public class ServicesController : ControllerBase
         var process = Process.Start(new ProcessStartInfo
         {
             FileName = "systemctl",
-            Arguments = "list-units --type=service --state=running --no-pager --no-legend",
+            Arguments = "list-unit-files --type=service --no-pager --no-legend",
             RedirectStandardOutput = true,
             UseShellExecute = false
         });
@@ -23,15 +23,31 @@ public class ServicesController : ControllerBase
 
         var services = output
             .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-            .Select(line => line.Split(' ', StringSplitOptions.RemoveEmptyEntries)[0])
+            .Select(line =>
+            {
+                var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+                return new
+                {
+                    name = parts[0],
+                    state = parts.Length > 1 ? parts[1] : "unknown"
+                };
+            })
             .ToList();
 
-        int serviceCount = services.Count;
+        int totalServices = services.Count;
+        int enabledServices = services.Count(s => s.state == "enabled");
+        int disabledServices = services.Count(s => s.state == "disabled");
         
         return Ok(new
         {
-            serviceCount,
-            services
+            services = new
+            {
+                total = totalServices,
+                enabled = enabledServices,
+                disabled = disabledServices,
+                list = services
+            }
         });
     }
 }
