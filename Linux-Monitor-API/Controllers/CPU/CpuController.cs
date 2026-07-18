@@ -27,6 +27,11 @@ public class CpuController  : ControllerBase
             ?.Split(':', 2)[1]
             .Trim() ?? "Unknown";
         
+        string cpuCore = System.IO.File.ReadLines("/proc/cpuinfo")
+            .FirstOrDefault(l => l.StartsWith("cpu family"))
+            ?.Split(':', 2)[1]
+            .Trim() ?? "Unknown";
+        
         return Ok(new
         {
             usage = Math.Round(usage, 2),
