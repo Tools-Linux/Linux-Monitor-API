@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\maell\\Music\\Soyako\\WebApplication1\\Linux-Monitor-API\\Linux-Monitor-API.csproj": {}
+    "C:\\Users\\maell\\Pictures\\Linux-Monitor-API\\Linux-Monitor-API\\Linux-Monitor-API.csproj": {}
   },
   "projects": {
-    "C:\\Users\\maell\\Music\\Soyako\\WebApplication1\\Linux-Monitor-API\\Linux-Monitor-API.csproj": {
+    "C:\\Users\\maell\\Pictures\\Linux-Monitor-API\\Linux-Monitor-API\\Linux-Monitor-API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\maell\\Music\\Soyako\\WebApplication1\\Linux-Monitor-API\\Linux-Monitor-API.csproj",
+        "projectUniqueName": "C:\\Users\\maell\\Pictures\\Linux-Monitor-API\\Linux-Monitor-API\\Linux-Monitor-API.csproj",
         "projectName": "Linux-Monitor-API",
-        "projectPath": "C:\\Users\\maell\\Music\\Soyako\\WebApplication1\\Linux-Monitor-API\\Linux-Monitor-API.csproj",
+        "projectPath": "C:\\Users\\maell\\Pictures\\Linux-Monitor-API\\Linux-Monitor-API\\Linux-Monitor-API.csproj",
         "packagesPath": "C:\\Users\\maell\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\maell\\Music\\Soyako\\WebApplication1\\Linux-Monitor-API\\obj\\",
+        "outputPath": "C:\\Users\\maell\\Pictures\\Linux-Monitor-API\\Linux-Monitor-API\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\maell\\AppData\\Roaming\\NuGet\\NuGet.Config"
