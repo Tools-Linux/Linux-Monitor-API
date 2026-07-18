@@ -17,17 +17,23 @@ public class CpuController  : ControllerBase
         var total = second.Total - first.Total;
 
         var usage = (1.0 - (double)idle / total) * 100;
-
+        
+        
+        string cpuName = System.IO.File.ReadLines("/proc/cpuinfo")
+            .FirstOrDefault(l => l.StartsWith("model name"))
+            ?.Split(':', 2)[1]
+            .Trim() ?? "Unknown";
+        
         return Ok(new
         {
-            usage = Math.Round(usage, 2)
+            usage = Math.Round(usage, 2),
+            name = cpuName
         });
     }
     
     private static (long Idle, long Total) ReadCpu()
     {
         var line = System.IO.File.ReadLines("/proc/stat").First();
-
         var values = line.Split(' ', StringSplitOptions.RemoveEmptyEntries)
             .Skip(1)
             .Select(long.Parse)
