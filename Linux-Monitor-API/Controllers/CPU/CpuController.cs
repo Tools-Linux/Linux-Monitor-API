@@ -38,6 +38,22 @@ public class CpuController  : ControllerBase
         int processcount = Directory.EnumerateDirectories("/proc")
             .Count(dir => int.TryParse(Path.GetFileName(dir), out _));
         
+        
+        int threadCount = 0;
+
+        foreach (var procDir in Directory.EnumerateDirectories("/proc"))
+        {
+            if (!int.TryParse(Path.GetFileName(procDir), out _))
+                continue;
+
+            var taskDir = Path.Combine(procDir, "task");
+
+            if (Directory.Exists(taskDir))
+            {
+                threadCount += Directory.EnumerateDirectories(taskDir).Count();
+            }
+        }
+        
         return Ok(new
         {
             usage = Math.Round(usage, 2),
@@ -45,6 +61,7 @@ public class CpuController  : ControllerBase
             core = cpuCore,
             arch = architecture,
             processes = processcount,
+            threads = threadCount,
         });
     }
     
