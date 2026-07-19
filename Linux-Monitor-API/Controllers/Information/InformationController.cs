@@ -17,10 +17,7 @@ public class InformationController : ControllerBase
 
         var uptime = TimeSpan.FromSeconds(uptimeSeconds);
 
-        var formattedUptime = $"{uptime.Days} jour{(uptime.Days > 1 ? "s" : "")}, " +
-                              $"{uptime.Hours} heure{(uptime.Hours > 1 ? "s" : "")}, " +
-                              $"{uptime.Minutes} minute{(uptime.Minutes > 1 ? "s" : "")}, " +
-                              $"{uptime.Seconds} seconde{(uptime.Seconds > 1 ? "s" : "")}";
+        var formattedUptime = $"{uptime.Days:00}:{uptime.Hours:00}:{uptime.Minutes:00}:{uptime.Seconds:00}";
 
         return Ok(new
         {
