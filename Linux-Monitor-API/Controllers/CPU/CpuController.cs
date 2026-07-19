@@ -1,7 +1,14 @@
-﻿using System.Runtime.InteropServices;
+﻿using System.Globalization;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Linux_Monitor_API.Controllers.CPU;
+
+public class CpuCoreUsage
+{
+    public string Core { get; set; } = "";
+    public double Usage { get; set; }
+}
 
 [ApiController]
 [Route("api/cpu")]
@@ -59,6 +66,31 @@ public class CpuController  : ControllerBase
         string kernelVersion = System.IO.File.ReadAllText("/proc/sys/kernel/osrelease").Trim();
         
         double cpuTemp = int.Parse(System.IO.File.ReadAllText("/sys/class/thermal/thermal_zone0/temp")) / 1000.0;
+        
+        var firStats = ReadCpuStats();
+        await Task.Delay(1000);
+        var secondStats = ReadCpuStats();
+
+        var result = new List<CpuCoreUsage>();
+
+        foreach (var core in firStats.Keys)
+        {
+            var a = firStats[core];
+            var b = secondStats[core];
+
+            var aIdle = b.Idle - a.Idle;
+            var aTotal = b.Total - a.Total;
+
+            var usages = total > 0
+                ? (1.0 - (double)idle / total) * 100
+                : 0;
+
+            result.Add(new CpuCoreUsage
+            {
+                Core = core,
+                Usage = Math.Round(usage, 1)
+            });
+        }
 
         return Ok(new
         {
@@ -71,7 +103,8 @@ public class CpuController  : ControllerBase
             host = hostname,
             os = osName,
             kernel = kernelVersion,
-            tempCpu = cpuTemp
+            tempCpu = cpuTemp,
+            charge = result
         });
     }
     
@@ -87,5 +120,33 @@ public class CpuController  : ControllerBase
         long total = values.Sum();
 
         return (idle, total);
+    }
+    
+    private static Dictionary<string, (ulong Idle, ulong Total)> ReadCpuStats()
+    {
+        var stats = new Dictionary<string, (ulong, ulong)>();
+
+        foreach (var line in System.IO.File.ReadLines("/proc/stat"))
+        {
+            if (!line.StartsWith("cpu") || line.StartsWith("cpu "))
+                continue;
+
+            var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+            ulong user = ulong.Parse(parts[1], CultureInfo.InvariantCulture);
+            ulong nice = ulong.Parse(parts[2], CultureInfo.InvariantCulture);
+            ulong system = ulong.Parse(parts[3], CultureInfo.InvariantCulture);
+            ulong idle = ulong.Parse(parts[4], CultureInfo.InvariantCulture);
+            ulong iowait = ulong.Parse(parts[5], CultureInfo.InvariantCulture);
+            ulong irq = ulong.Parse(parts[6], CultureInfo.InvariantCulture);
+            ulong softirq = ulong.Parse(parts[7], CultureInfo.InvariantCulture);
+            ulong steal = parts.Length > 8 ? ulong.Parse(parts[8], CultureInfo.InvariantCulture) : 0;
+
+            ulong total = user + nice + system + idle + iowait + irq + softirq + steal;
+
+            stats[parts[0]] = (idle + iowait, total);
+        }
+
+        return stats;
     }
 }
