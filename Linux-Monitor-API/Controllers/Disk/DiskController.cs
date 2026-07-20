@@ -29,44 +29,68 @@ public class DiskController : ControllerBase
             if (disk.Type != "disk")
                 continue;
 
-            var size = disk.Size / 1024d / 1024d / 1024d;
-            var device = "/dev/" + disk.Name;
+            var diskSize = disk.Size / 1024d / 1024d / 1024d;
 
-            used.TryGetValue(device, out var usedBytes);
-
-            var usedGb = usedBytes / 1024d / 1024d / 1024d;
-            
-
-            snapshot.Disks.Add(new DiskInfo
+            var diskInfo = new DiskInfo
             {
-                Device = device,
+                Device = "/dev/" + disk.Name,
+
                 Model = string.IsNullOrWhiteSpace(disk.Model)
                     ? "Inconnu"
                     : disk.Model.Trim(),
 
-                Mount = disk.MountPoint ?? "-",
-                FsType = disk.FsType ?? "-",
-
-                SizeGB = Math.Round(size, 1),
-                UsedGB = Math.Round(usedGb, 1),
+                SizeGB = Math.Round(diskSize, 1),
 
                 TempC = 0,
                 ReadMBps = 0,
                 WriteMBps = 0,
 
                 Health = "ok"
-            });
+            };
+
+
+            // Cherche les partitions du disque
+            var partitions = disk.Children ?? [];
+
+            long totalUsed = 0;
+
+            foreach (var part in partitions)
+            {
+                var device = "/dev/" + part.Name;
+
+                if (used.TryGetValue(device, out var bytes))
+                {
+                    totalUsed += bytes;
+                }
+                
+                if (!string.IsNullOrEmpty(part.FsType))
+                    diskInfo.FsType = part.FsType;
+
+                if (!string.IsNullOrEmpty(part.MountPoint))
+                    diskInfo.Mount = part.MountPoint;
+            }
+
+
+            diskInfo.UsedGB =
+                Math.Round(totalUsed / 1024d / 1024d / 1024d, 1);
+
+
+            snapshot.Disks.Add(diskInfo);
         }
+
 
         snapshot.TotalGb = snapshot.Disks.Sum(x => x.SizeGB);
         snapshot.UsedGb = snapshot.Disks.Sum(x => x.UsedGB);
         snapshot.FreeGb = snapshot.TotalGb - snapshot.UsedGb;
+
         snapshot.Usage = snapshot.TotalGb == 0
             ? 0
             : snapshot.UsedGb / snapshot.TotalGb * 100;
 
+
         return Ok(snapshot);
     }
+
 
     static string Run(string cmd, string args)
     {
