@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.IO;
+using Microsoft.AspNetCore.Mvc;
 
 namespace Linux_Monitor_API.Controllers.Disk;
 
@@ -24,6 +25,13 @@ public class DiskController : ControllerBase
                 long free = drive.AvailableFreeSpace;
                 long used = total - free;
 
+                double usage = 0;
+
+                if (total > 0)
+                {
+                    usage = Math.Round((double)used / total * 100, 2);
+                }
+
                 disks.Add(new
                 {
                     name = drive.Name,
@@ -34,11 +42,12 @@ public class DiskController : ControllerBase
                     usedGb = Math.Round(used / 1024d / 1024 / 1024, 2),
                     freeGb = Math.Round(free / 1024d / 1024 / 1024, 2),
 
-                    usage = Math.Round((double)used / total * 100, 2)
+                    usage
                 });
             }
-            catch
+            catch (Exception ex)
             {
+                Console.WriteLine($"Erreur disque {drive.Name}: {ex.Message}");
             }
         }
 
