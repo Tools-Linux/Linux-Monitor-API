@@ -3,6 +3,8 @@ using System.Text.Json;
 using Linux_Monitor_API.Models.Disk;
 using Microsoft.AspNetCore.Mvc;
 
+namespace Linux_Monitor_API.Controllers.Disk;
+
 [ApiController]
 [Route("api/disk")]
 public class DiskController : ControllerBase
