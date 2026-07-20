@@ -68,7 +68,7 @@ public class CpuController  : ControllerBase
         double cpuTemp = int.Parse(System.IO.File.ReadAllText("/sys/class/thermal/thermal_zone0/temp")) / 1000.0;
         
         var firStats = ReadCpuStats();
-        await Task.Delay(1000);
+        await Task.Delay(100);
         var secondStats = ReadCpuStats();
 
         var result = new List<CpuCoreUsage>();
