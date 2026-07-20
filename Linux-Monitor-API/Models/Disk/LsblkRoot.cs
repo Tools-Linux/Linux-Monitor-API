@@ -30,3 +30,25 @@ public class LsblkRoot
     [JsonPropertyName("blockdevices")]
     public List<LsblkDevice> Blockdevices { get; set; } = [];
 }
+
+public class LsblkPartition
+{
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = "";
+
+    [JsonPropertyName("pkname")]
+    public string? Parent { get; set; }
+
+    [JsonPropertyName("mountpoint")]
+    public string? MountPoint { get; set; }
+
+    [JsonPropertyName("fstype")]
+    public string? FsType { get; set; }
+}
+
+
+public class LsblkPartitionRoot
+{
+    [JsonPropertyName("blockdevices")]
+    public List<LsblkPartition> Blockdevices { get; set; } = [];
+}
