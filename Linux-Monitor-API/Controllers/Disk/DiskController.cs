@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.Text.Json;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Linux_Monitor_API.Controllers.Disk;
@@ -10,47 +11,21 @@ public class DiskController : ControllerBase
     [HttpGet]
     public IActionResult Get()
     {
-        var drives = DriveInfo.GetDrives();
-
-        var disks = new List<object>();
-
-        foreach (var drive in drives)
+        var psi = new ProcessStartInfo
         {
-            try
-            {
-                if (!drive.IsReady)
-                    continue;
+            FileName = "lsblk",
+            Arguments = "-J -o NAME,SIZE,TYPE,MODEL,SERIAL,MOUNTPOINT",
+            RedirectStandardOutput = true,
+            UseShellExecute = false
+        };
 
-                long total = drive.TotalSize;
-                long free = drive.AvailableFreeSpace;
-                long used = total - free;
+        using var process = Process.Start(psi);
 
-                double usage = 0;
+        string output = process.StandardOutput.ReadToEnd();
+        process.WaitForExit();
 
-                if (total > 0)
-                {
-                    usage = Math.Round((double)used / total * 100, 2);
-                }
+        var data = JsonSerializer.Deserialize<object>(output);
 
-                disks.Add(new
-                {
-                    name = drive.Name,
-                    format = drive.DriveFormat,
-                    type = drive.DriveType.ToString(),
-
-                    totalGb = Math.Round(total / 1024d / 1024 / 1024, 2),
-                    usedGb = Math.Round(used / 1024d / 1024 / 1024, 2),
-                    freeGb = Math.Round(free / 1024d / 1024 / 1024, 2),
-
-                    usage
-                });
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Erreur disque {drive.Name}: {ex.Message}");
-            }
-        }
-
-        return Ok(disks);
+        return Ok(data);
     }
 }
