@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace Linux_Monitor_API.Controllers.Disk;
 
@@ -8,28 +6,42 @@ namespace Linux_Monitor_API.Controllers.Disk;
 [Route("api/disk")]
 public class DiskController : ControllerBase
 {
-
     [HttpGet]
     public IActionResult Get()
     {
-        var drive = new DriveInfo("/");
+        var drives = DriveInfo.GetDrives();
 
-        if (!drive.IsReady)
+        var disks = new List<object>();
+
+        foreach (var drive in drives)
         {
-            return StatusCode(500, "Le disque n'est pas disponible");
+            try
+            {
+                if (!drive.IsReady)
+                    continue;
+
+                long total = drive.TotalSize;
+                long free = drive.AvailableFreeSpace;
+                long used = total - free;
+
+                disks.Add(new
+                {
+                    name = drive.Name,
+                    format = drive.DriveFormat,
+                    type = drive.DriveType.ToString(),
+
+                    totalGb = Math.Round(total / 1024d / 1024 / 1024, 2),
+                    usedGb = Math.Round(used / 1024d / 1024 / 1024, 2),
+                    freeGb = Math.Round(free / 1024d / 1024 / 1024, 2),
+
+                    usage = Math.Round((double)used / total * 100, 2)
+                });
+            }
+            catch
+            {
+            }
         }
 
-        long total = drive.TotalSize;
-        long free = drive.AvailableFreeSpace;
-        long used = total - free;
-        
-        return Ok(new
-        {
-            diskname = drive,
-            totalGb = Math.Round(total / 1024d / 1024 / 1024, 2),
-            usedGb = Math.Round(used / 1024d / 1024 / 1024, 2),
-            freeGb = Math.Round(free / 1024d / 1024 / 1024, 2),
-            usage = Math.Round((double)used / total * 100, 2)
-        });
+        return Ok(disks);
     }
 }
