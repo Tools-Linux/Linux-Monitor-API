@@ -14,6 +14,7 @@ public class DiskSnapshot
 public class DiskInfo
 {
     public string Device { get; set; } = "";
+    public string Model { get; set; } = "";
     public string Mount { get; set; } = "-";
     public string FsType { get; set; } = "-";
 

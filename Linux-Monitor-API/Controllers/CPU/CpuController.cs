@@ -1,14 +1,9 @@
 ﻿using System.Globalization;
 using System.Runtime.InteropServices;
+using Linux_Monitor_API.Models.CPU;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Linux_Monitor_API.Controllers.CPU;
-
-public class CpuCoreUsage
-{
-    public string Core { get; set; } = "";
-    public double Usage { get; set; }
-}
 
 [ApiController]
 [Route("api/cpu")]

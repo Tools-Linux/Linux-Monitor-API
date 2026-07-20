@@ -15,6 +15,9 @@ public class LsblkDevice
 
     [JsonPropertyName("size")]
     public long Size { get; set; }
+    
+    [JsonPropertyName("model")]
+    public string Model { get; set; }
 
     [JsonPropertyName("type")]
     public string Type { get; set; } = "";

@@ -13,7 +13,7 @@ public class DiskController : ControllerBase
     public IActionResult Get()
     {
         var lsblk = Run("lsblk",
-            "-J -b -o NAME,SIZE,TYPE,MOUNTPOINT,FSTYPE");
+            "-J -b -o NAME,SIZE,MODEL,TYPE,MOUNTPOINT,FSTYPE");
 
         var df = Run("df",
             "-B1 --output=source,used");
@@ -35,18 +35,25 @@ public class DiskController : ControllerBase
             used.TryGetValue(device, out var usedBytes);
 
             var usedGb = usedBytes / 1024d / 1024d / 1024d;
+            
 
             snapshot.Disks.Add(new DiskInfo
             {
                 Device = device,
+                Model = string.IsNullOrWhiteSpace(disk.Model)
+                    ? "Inconnu"
+                    : disk.Model.Trim(),
+
                 Mount = disk.MountPoint ?? "-",
                 FsType = disk.FsType ?? "-",
+
                 SizeGB = Math.Round(size, 1),
                 UsedGB = Math.Round(usedGb, 1),
-                
+
                 TempC = 0,
                 ReadMBps = 0,
                 WriteMBps = 0,
+
                 Health = "ok"
             });
         }
