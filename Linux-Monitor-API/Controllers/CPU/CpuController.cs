@@ -67,28 +67,29 @@ public class CpuController  : ControllerBase
         
         double cpuTemp = int.Parse(System.IO.File.ReadAllText("/sys/class/thermal/thermal_zone0/temp")) / 1000.0;
         
-        var firStats = ReadCpuStats();
+        var firstStats = ReadCpuStats();
+
         await Task.Delay(100);
+
         var secondStats = ReadCpuStats();
 
-        var result = new List<CpuCoreUsage>();
+        var result = new List<CpuCoreUsage>(firstStats.Count);
 
-        foreach (var core in firStats.Keys)
+        foreach (var (core, firstss) in firstStats)
         {
-            var a = firStats[core];
-            var b = secondStats[core];
+            if (!secondStats.TryGetValue(core, out var seconds))
+                continue;
 
-            var aIdle = b.Idle - a.Idle;
-            var aTotal = b.Total - a.Total;
-
-            var usages = total > 0
-                ? (1.0 - (double)idle / total) * 100
-                : 0;
+            var totalDelta = seconds.Total - firstss.Total;
 
             result.Add(new CpuCoreUsage
             {
                 Core = core,
-                Usage = Math.Round(usage, 1)
+                Usage = totalDelta == 0
+                    ? 0
+                    : Math.Round(
+                        100.0 * (totalDelta - (seconds.Idle - firstss.Idle)) / totalDelta,
+                        1)
             });
         }
 
