@@ -25,6 +25,7 @@ public class DiskController : ControllerBase
         
         return Ok(new
         {
+            diskname = drive,
             totalGb = Math.Round(total / 1024d / 1024 / 1024, 2),
             usedGb = Math.Round(used / 1024d / 1024 / 1024, 2),
             freeGb = Math.Round(free / 1024d / 1024 / 1024, 2),
