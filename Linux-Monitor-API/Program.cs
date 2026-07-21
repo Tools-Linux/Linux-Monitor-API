@@ -5,15 +5,20 @@ var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://0.0.0.0:5000");
 
 builder.Services.AddControllers();
+builder.Services.AddSignalR();
 
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("Open", policy =>
+    options.AddPolicy("Frontend", policy =>
     {
         policy
-            .AllowAnyOrigin()
+            .WithOrigins(
+                "http://192.168.1.39:5173",
+                "http://localhost:5173"
+            )
             .AllowAnyHeader()
-            .AllowAnyMethod();
+            .AllowAnyMethod()
+            .AllowCredentials();
     });
 });
 
@@ -28,14 +33,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseHttpsRedirection();
-
-builder.Services.AddSignalR();
-
-app.MapHub<NetworkHub>("/ws/monitor");
-
-app.UseCors("Open");
+app.UseCors("Frontend");
+app.UseAuthorization();
 
 app.MapControllers();
+
+app.MapHub<NetworkHub>("/ws/network");
 
 app.Run();
