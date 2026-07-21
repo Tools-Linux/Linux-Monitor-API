@@ -24,6 +24,9 @@ builder.Services.AddCors(options =>
     });
 });
 
+
+builder.Services.AddSingleton<MemoryServices>();
+builder.Services.AddSingleton<DashboardWebSocket>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -38,10 +41,6 @@ if (app.Environment.IsDevelopment())
 app.UseCors("Frontend");
 
 app.UseAuthorization();
-
-builder.Services.AddSingleton<MemoryServices>();
-
-builder.Services.AddSingleton<DashboardWebSocket>();
 
 app.UseWebSockets();
 
