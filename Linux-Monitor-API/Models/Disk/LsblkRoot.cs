@@ -24,7 +24,6 @@ public class LsblkDevice
     public List<LsblkDevice>? Children { get; set; }
 }
 
-
 public class LsblkRoot
 {
     [JsonPropertyName("blockdevices")]
