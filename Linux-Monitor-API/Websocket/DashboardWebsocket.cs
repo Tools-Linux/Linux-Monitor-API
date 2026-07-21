@@ -10,11 +10,9 @@ public class DashboardWebSocket
 {
     private readonly MemoryServices _memoryService;
 
-    private readonly ConcurrentDictionary<Guid, WebSocket> _clients = new();
+    private readonly ConcurrentBag<WebSocket> _clients = new();
 
-
-    public DashboardWebSocket(
-        MemoryServices memoryService)
+    public DashboardWebSocket(MemoryServices memoryService)
     {
         _memoryService = memoryService;
     }
@@ -24,26 +22,14 @@ public class DashboardWebSocket
         WebSocket socket,
         CancellationToken cancellationToken)
     {
-        var id = Guid.NewGuid();
+        _clients.Add(socket);
 
-        _clients.TryAdd(id, socket);
-
-
-        Console.WriteLine(
-            $"Dashboard clients : {_clients.Count}"
-        );
-
+        Console.WriteLine($"Clients WS : {_clients.Count}");
 
         try
         {
-            while(socket.State == WebSocketState.Open)
+            while (socket.State == WebSocketState.Open)
             {
-                await Task.Delay(
-                    1000,
-                    cancellationToken
-                );
-
-
                 var memory = await _memoryService.GetAsync();
 
 
@@ -52,6 +38,9 @@ public class DashboardWebSocket
                     type = "memory",
                     data = memory
                 });
+
+
+                await Task.Delay(1000, cancellationToken);
             }
         }
         catch(Exception ex)
@@ -60,22 +49,9 @@ public class DashboardWebSocket
         }
         finally
         {
-            _clients.TryRemove(id, out _);
+            _clients.TryTake(out _);
 
-
-            if(socket.State == WebSocketState.Open)
-            {
-                await socket.CloseAsync(
-                    WebSocketCloseStatus.NormalClosure,
-                    "Closed",
-                    CancellationToken.None
-                );
-            }
-
-
-            Console.WriteLine(
-                $"Dashboard clients : {_clients.Count}"
-            );
+            Console.WriteLine($"Clients WS : {_clients.Count}");
         }
     }
 
@@ -87,13 +63,13 @@ public class DashboardWebSocket
         var buffer = Encoding.UTF8.GetBytes(json);
 
 
-        foreach(var socket in _clients.Values)
+        foreach(var client in _clients)
         {
-            if(socket.State != WebSocketState.Open)
+            if(client.State != WebSocketState.Open)
                 continue;
 
 
-            await socket.SendAsync(
+            await client.SendAsync(
                 buffer,
                 WebSocketMessageType.Text,
                 true,
