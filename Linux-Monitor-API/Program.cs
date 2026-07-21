@@ -1,4 +1,5 @@
 using Linux_Monitor_API.Controllers.Network;
+using Linux_Monitor_API.Services.CPU;
 using Linux_Monitor_API.Services.Memory;
 using Linux_Monitor_API.Websocket;
 
@@ -25,6 +26,7 @@ builder.Services.AddCors(options =>
 });
 
 
+builder.Services.AddSingleton<CpuServices>();
 builder.Services.AddSingleton<MemoryServices>();
 builder.Services.AddSingleton<DashboardWebSocket>();
 builder.Services.AddEndpointsApiExplorer();
