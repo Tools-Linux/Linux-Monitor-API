@@ -1,4 +1,5 @@
-﻿using System.Net.WebSockets;
+﻿using System.Collections.Concurrent;
+using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using Linux_Monitor_API.Services.Memory;
@@ -9,34 +10,95 @@ public class DashboardWebSocket
 {
     private readonly MemoryServices _memoryService;
 
+    private readonly ConcurrentDictionary<Guid, WebSocket> _clients = new();
+
+
     public DashboardWebSocket(
         MemoryServices memoryService)
     {
         _memoryService = memoryService;
     }
 
-    public async Task HandleAsync(WebSocket socket, CancellationToken cancellationToken)
+
+    public async Task HandleAsync(
+        WebSocket socket,
+        CancellationToken cancellationToken)
     {
-        var receiveBuffer = new byte[1024];
+        var id = Guid.NewGuid();
 
-        while (socket.State == WebSocketState.Open)
-        { 
-            var memory = _memoryService.GetAsync();
+        _clients.TryAdd(id, socket);
 
-            var payload = new
+
+        Console.WriteLine(
+            $"Dashboard clients : {_clients.Count}"
+        );
+
+
+        try
+        {
+            while(socket.State == WebSocketState.Open)
             {
-                memory
-            };
+                await Task.Delay(
+                    1000,
+                    cancellationToken
+                );
 
-            var json = JsonSerializer.Serialize(payload);
+
+                var memory = await _memoryService.GetAsync();
+
+
+                await BroadcastAsync(new
+                {
+                    type = "memory",
+                    data = memory
+                });
+            }
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        finally
+        {
+            _clients.TryRemove(id, out _);
+
+
+            if(socket.State == WebSocketState.Open)
+            {
+                await socket.CloseAsync(
+                    WebSocketCloseStatus.NormalClosure,
+                    "Closed",
+                    CancellationToken.None
+                );
+            }
+
+
+            Console.WriteLine(
+                $"Dashboard clients : {_clients.Count}"
+            );
+        }
+    }
+
+
+    private async Task BroadcastAsync(object data)
+    {
+        var json = JsonSerializer.Serialize(data);
+
+        var buffer = Encoding.UTF8.GetBytes(json);
+
+
+        foreach(var socket in _clients.Values)
+        {
+            if(socket.State != WebSocketState.Open)
+                continue;
+
 
             await socket.SendAsync(
-                Encoding.UTF8.GetBytes(json),
+                buffer,
                 WebSocketMessageType.Text,
                 true,
-                cancellationToken);
-
-            await Task.Delay(1000, cancellationToken);
+                CancellationToken.None
+            );
         }
     }
 }
