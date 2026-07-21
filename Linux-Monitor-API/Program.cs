@@ -1,3 +1,5 @@
+using Linux_Monitor_API.Controllers.Network;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.WebHost.UseUrls("http://0.0.0.0:5000");
@@ -27,6 +29,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+builder.Services.AddSignalR();
+
+app.MapHub<NetworkHub>("/ws/monitor");
 
 app.UseCors("Open");
 

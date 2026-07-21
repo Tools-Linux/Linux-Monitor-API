@@ -10,8 +10,7 @@ public class NetworkController : ControllerBase
 {
     private static readonly Dictionary<string, (ulong Rx, ulong Tx)> Previous = new();
     
-    [HttpGet]
-    public IActionResult GetNetwork()
+    public static List<object> GetSnapshot()
     {
         var interfaces = new List<object>();
 
@@ -81,6 +80,14 @@ public class NetworkController : ControllerBase
             {
             }
         }
-        return Ok(interfaces);
+        
+        return interfaces;
+    }
+    
+    [HttpGet]
+    public IActionResult GetNetwork()
+    {
+        
+        return Ok(GetSnapshot());
     }
 }
