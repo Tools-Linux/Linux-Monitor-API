@@ -1,4 +1,6 @@
 using Linux_Monitor_API.Controllers.Network;
+using Linux_Monitor_API.Services.Memory;
+using Linux_Monitor_API.Websocket;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -24,7 +26,6 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddHostedService<NetworkWorker>();
 
 var app = builder.Build();
         
@@ -38,7 +39,27 @@ app.UseCors("Frontend");
 
 app.UseAuthorization();
 
-app.MapHub<NetworkHub>("/ws/network");
+builder.Services.AddSingleton<MemoryServices>();
+
+builder.Services.AddSingleton<DashboardWebSocket>();
+
+app.UseWebSockets();
+
+app.Map("/ws/dashboard", async context =>
+{
+    if (!context.WebSockets.IsWebSocketRequest)
+    {
+        context.Response.StatusCode = 400;
+        return;
+    }
+
+    var socket = await context.WebSockets.AcceptWebSocketAsync();
+
+    var dashboard = context.RequestServices
+        .GetRequiredService<DashboardWebSocket>();
+
+    await dashboard.HandleAsync(socket, context.RequestAborted);
+});
 
 app.MapControllers();
 
