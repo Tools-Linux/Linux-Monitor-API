@@ -12,6 +12,94 @@ public class DiskController : ControllerBase
     [HttpGet]
     public IActionResult Get()
     {
+        if (IsLxc())
+            return Ok(GetContainerStorage());
+
+        return Ok(GetPhysicalDisks());
+    }
+
+    private static bool IsLxc()
+    {
+        try
+        {
+            if (System.IO.File.Exists("/.dockerenv"))
+                return true;
+
+            if (System.IO.File.Exists("/run/.containerenv"))
+                return true;
+
+            if (System.IO.File.Exists("/proc/1/environ"))
+            {
+                var env = System.IO.File.ReadAllText("/proc/1/environ");
+
+                if (env.Contains("container=lxc") ||
+                    env.Contains("container=lxc-libvirt"))
+                    return true;
+            }
+
+            if (System.IO.File.Exists("/proc/1/cgroup"))
+            {
+                var cgroup = System.IO.File.ReadAllText("/proc/1/cgroup");
+
+                if (cgroup.Contains("lxc"))
+                    return true;
+            }
+        }
+        catch
+        {
+        }
+
+        return false;
+    }
+
+    private DiskSnapshot GetContainerStorage()
+    {
+        var df = Run("df", "-B1 --output=source,size,used,target /");
+
+        var lines = df.Split('\n', StringSplitOptions.RemoveEmptyEntries);
+
+        var snapshot = new DiskSnapshot();
+
+        if (lines.Length < 2)
+            return snapshot;
+
+        var cols = lines[1].Split(' ', StringSplitOptions.RemoveEmptyEntries);
+
+        if (cols.Length < 4)
+            return snapshot;
+
+        var size = long.Parse(cols[1]);
+        var used = long.Parse(cols[2]);
+
+        var disk = new DiskInfo
+        {
+            Device = cols[0],
+            Model = "Container Storage",
+            Mount = cols[3],
+            FsType = "-",
+            SizeGB = Math.Round(size / 1024d / 1024d / 1024d, 1),
+            UsedGB = Math.Round(used / 1024d / 1024d / 1024d, 1),
+            TempC = 0,
+            ReadMBps = 0,
+            WriteMBps = 0,
+            Health = "ok"
+        };
+
+        snapshot.Disks.Add(disk);
+
+        snapshot.TotalGb = disk.SizeGB;
+        snapshot.UsedGb = disk.UsedGB;
+        snapshot.FreeGb = snapshot.TotalGb - snapshot.UsedGb;
+
+        snapshot.Usage = snapshot.TotalGb == 0
+            ? 0
+            : snapshot.UsedGb / snapshot.TotalGb * 100;
+
+        return snapshot;
+    }
+
+    private DiskSnapshot GetPhysicalDisks()
+    {
         var lsblk = Run(
             "lsblk",
             "-J -b -o NAME,SIZE,MODEL,TYPE,MOUNTPOINT,FSTYPE"
@@ -23,11 +111,12 @@ public class DiskController : ControllerBase
         );
 
         var block = JsonSerializer.Deserialize<LsblkRoot>(lsblk);
+
         var used = ParseDf(df);
 
-        var snapshot = new DiskSnapshot();
-
-        foreach (var disk in block?.Blockdevices ?? [])
+        var snapshot = new DiskSnapshot();  
+        
+                foreach (var disk in block?.Blockdevices ?? [])
         {
             if (disk.Type != "disk")
                 continue;
@@ -39,13 +128,13 @@ public class DiskController : ControllerBase
                     ? "Inconnu"
                     : disk.Model.Trim(),
 
+                Mount = "-",
+                FsType = "-",
+
                 SizeGB = Math.Round(
                     disk.Size / 1024d / 1024d / 1024d,
                     1
                 ),
-
-                Mount = "-",
-                FsType = "-",
 
                 TempC = 0,
                 ReadMBps = 0,
@@ -60,9 +149,7 @@ public class DiskController : ControllerBase
                 var device = "/dev/" + part.Name;
 
                 if (used.TryGetValue(device, out var bytes))
-                {
                     usedBytes += bytes;
-                }
 
                 if (!string.IsNullOrWhiteSpace(part.MountPoint))
                     diskInfo.Mount = part.MountPoint;
@@ -87,9 +174,8 @@ public class DiskController : ControllerBase
             ? 0
             : snapshot.UsedGb / snapshot.TotalGb * 100;
 
-        return Ok(snapshot);
+        return snapshot;
     }
-
 
     static string Run(string cmd, string args)
     {
@@ -102,7 +188,6 @@ public class DiskController : ControllerBase
             UseShellExecute = false
         };
 
-
         using var p = Process.Start(psi)!;
 
         var output = p.StandardOutput.ReadToEnd();
@@ -111,7 +196,6 @@ public class DiskController : ControllerBase
 
         return output;
     }
-
 
     static Dictionary<string, long> ParseDf(string text)
     {
@@ -124,17 +208,12 @@ public class DiskController : ControllerBase
                 StringSplitOptions.RemoveEmptyEntries
             );
 
-
             if (cols.Length < 2)
                 continue;
 
-
             if (long.TryParse(cols[1], out var used))
-            {
                 result[cols[0]] = used;
-            }
         }
-
 
         return result;
     }
