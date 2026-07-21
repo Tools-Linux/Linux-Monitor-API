@@ -60,7 +60,15 @@ public class CpuController  : ControllerBase
         
         string kernelVersion = System.IO.File.ReadAllText("/proc/sys/kernel/osrelease").Trim();
         
-        double cpuTemp = int.Parse(System.IO.File.ReadAllText("/sys/class/thermal/thermal_zone0/temp")) / 1000.0;
+        const string tempPath = "/sys/class/thermal/thermal_zone0/temp";
+
+        double? cpuTemp = null;
+
+        if (System.IO.File.Exists(tempPath))
+        {
+            cpuTemp = double.Parse(System.IO.File.ReadAllText(tempPath)) / 1000.0;
+        }
+
         
         var firstStats = ReadCpuStats();
 
