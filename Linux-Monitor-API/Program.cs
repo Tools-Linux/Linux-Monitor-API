@@ -24,9 +24,10 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.AddHostedService<NetworkWorker>();
 
 var app = builder.Build();
-
+        
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -34,10 +35,11 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors("Frontend");
+
 app.UseAuthorization();
 
-app.MapControllers();
-
 app.MapHub<NetworkHub>("/ws/network");
+
+app.MapControllers();
 
 app.Run();
