@@ -27,6 +27,15 @@ public class DiskController : ControllerBase
             "-B1 --output=source,used"
         );
 
+        Console.WriteLine("========== LSBLK ==========");
+        Console.WriteLine(lsblk);
+
+        Console.WriteLine("========== LSBLK PARTITIONS ==========");
+        Console.WriteLine(lsblkParts);
+
+        Console.WriteLine("========== DF ==========");
+        Console.WriteLine(df);
+
         var block = JsonSerializer.Deserialize<LsblkRoot>(lsblk);
 
         var partitionRoot =
@@ -36,14 +45,30 @@ public class DiskController : ControllerBase
 
         var used = ParseDf(df);
 
-        var snapshot = new DiskSnapshot();
+        Console.WriteLine("========== PARSED DF ==========");
+        foreach (var kv in used)
+        {
+            Console.WriteLine($"{kv.Key} -> {kv.Value}");
+        }
 
+        Console.WriteLine("========== PARTITIONS ==========");
+        foreach (var p in partitions)
+        {
+            Console.WriteLine(
+                $"Name={p.Name} Parent={p.Parent} Mount={p.MountPoint} Fs={p.FsType}"
+            );
+        }
+
+        var snapshot = new DiskSnapshot();
 
         foreach (var disk in block?.Blockdevices ?? [])
         {
             if (disk.Type != "disk")
                 continue;
 
+            Console.WriteLine();
+            Console.WriteLine("=========================================");
+            Console.WriteLine($"DISQUE : {disk.Name}");
 
             var diskInfo = new DiskInfo
             {
@@ -68,26 +93,28 @@ public class DiskController : ControllerBase
                 Health = "ok"
             };
 
-
             long usedBytes = 0;
-
 
             foreach (var part in partitions.Where(x => x.Parent == disk.Name))
             {
                 var device = "/dev/" + part.Name;
 
+                Console.WriteLine($"Partition : {device}");
 
                 if (used.TryGetValue(device, out var bytes))
                 {
+                    Console.WriteLine($" -> TROUVÉ : {bytes} octets");
                     usedBytes += bytes;
                 }
-
+                else
+                {
+                    Console.WriteLine(" -> NON TROUVÉ");
+                }
 
                 if (!string.IsNullOrEmpty(part.FsType))
                 {
                     diskInfo.FsType = part.FsType;
                 }
-
 
                 if (!string.IsNullOrEmpty(part.MountPoint))
                 {
@@ -95,16 +122,18 @@ public class DiskController : ControllerBase
                 }
             }
 
-
             diskInfo.UsedGB = Math.Round(
                 usedBytes / 1024d / 1024d / 1024d,
                 1
             );
 
+            Console.WriteLine($"Taille disque : {diskInfo.SizeGB} GB");
+            Console.WriteLine($"Utilisé : {diskInfo.UsedGB} GB");
+            Console.WriteLine($"Montage : {diskInfo.Mount}");
+            Console.WriteLine($"FS : {diskInfo.FsType}");
 
             snapshot.Disks.Add(diskInfo);
         }
-
 
         snapshot.TotalGb = snapshot.Disks.Sum(x => x.SizeGB);
         snapshot.UsedGb = snapshot.Disks.Sum(x => x.UsedGB);
@@ -114,6 +143,12 @@ public class DiskController : ControllerBase
             ? 0
             : snapshot.UsedGb / snapshot.TotalGb * 100;
 
+        Console.WriteLine();
+        Console.WriteLine("========== SNAPSHOT ==========");
+        Console.WriteLine($"Total : {snapshot.TotalGb} GB");
+        Console.WriteLine($"Used : {snapshot.UsedGb} GB");
+        Console.WriteLine($"Free : {snapshot.FreeGb} GB");
+        Console.WriteLine($"Usage : {snapshot.Usage}%");
 
         return Ok(snapshot);
     }
