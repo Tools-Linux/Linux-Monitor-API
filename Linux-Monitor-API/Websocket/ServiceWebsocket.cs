@@ -9,10 +9,10 @@ namespace Linux_Monitor_API.Websocket;
 
 public class ServiceWebsocket
 {
-    private readonly ServiceManager _serviceManager;
+    private readonly ProcessManager _serviceManager;
     private readonly ConcurrentBag<WebSocket> _clients = new();
 
-    public ServiceWebsocket(ServiceManager serviceManager)
+    public ServiceWebsocket(ProcessManager serviceManager)
     {
         _serviceManager = serviceManager;
     }
@@ -31,7 +31,7 @@ public class ServiceWebsocket
         {
             while(socket.State == WebSocketState.Open)
             {
-                var logs = await _serviceManager.GetServices();
+                var logs = await _serviceManager.GetProcesses();
 
 
                 await SendAsync(socket,new
