@@ -6,6 +6,7 @@ using Linux_Monitor_API.Services.CPU;
 using Linux_Monitor_API.Services.Disk;
 using Linux_Monitor_API.Services.Information;
 using Linux_Monitor_API.Services.Memory;
+using Linux_Monitor_API.Services.Network;
 
 namespace Linux_Monitor_API.Websocket;
 
@@ -15,15 +16,17 @@ public class DashboardWebSocket
     private readonly CpuServices _cpusServices;
     private readonly DiskServices _diskServices;
     private readonly InformationServices _informationServices;
+    private readonly NetworkServices _networkServices;
 
     private readonly ConcurrentBag<WebSocket> _clients = new();
 
-    public DashboardWebSocket(MemoryServices memoryService, CpuServices cpusServices, DiskServices diskServices, InformationServices informationServices)
+    public DashboardWebSocket(MemoryServices memoryService, CpuServices cpusServices, DiskServices diskServices, InformationServices informationServices, NetworkServices networkServices)
     {
         _memoryService = memoryService;
         _cpusServices = cpusServices;
         _diskServices = diskServices;
         _informationServices = informationServices;
+        _networkServices = networkServices;
     }
 
 
@@ -43,6 +46,7 @@ public class DashboardWebSocket
                 var cpu = await _cpusServices.Get();
                 var disk = await _diskServices.Get();
                 var information = await _informationServices.Get();
+                var network = await _networkServices.GetNetworkAsync(); 
 
 
                 await BroadcastAsync(new
@@ -51,7 +55,8 @@ public class DashboardWebSocket
                     memory,
                     cpu,
                     disk,
-                    information
+                    information,
+                    network
                 });
 
 
