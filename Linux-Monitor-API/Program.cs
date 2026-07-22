@@ -69,20 +69,25 @@ app.Map("/ws/dashboard", async context =>
 
 app.Map("/ws/logs", async context =>
 {
-    if (!context.WebSockets.IsWebSocketRequest)
+    if(!context.WebSockets.IsWebSocketRequest)
     {
         context.Response.StatusCode = 400;
         return;
     }
 
+
     var socket = await context.WebSockets.AcceptWebSocketAsync();
 
-    var logsWebsocket = context.RequestServices
+
+    var logs = context.RequestServices
         .GetRequiredService<LogsWebsocket>();
 
-    await logsWebsocket.HandleAsync(socket, context.RequestAborted);
-});
 
+    await logs.HandleAsync(
+        socket,
+        context.RequestAborted
+    );
+});
 
 app.MapControllers();
 
