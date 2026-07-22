@@ -3,6 +3,7 @@ using Linux_Monitor_API.Services.CPU;
 using Linux_Monitor_API.Services.Disk;
 using Linux_Monitor_API.Services.Logs;
 using Linux_Monitor_API.Services.Memory;
+using Linux_Monitor_API.Services.Services;
 using Linux_Monitor_API.Websocket;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +35,7 @@ builder.Services.AddSingleton<DashboardWebSocket>();
 builder.Services.AddSingleton<LogsWebsocket>();
 builder.Services.AddSingleton<LogsServices>();
 builder.Services.AddSingleton<DiskServices>();
+builder.Services.AddSingleton<ServiceManager>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -76,16 +78,32 @@ app.Map("/ws/logs", async context =>
         context.Response.StatusCode = 400;
         return;
     }
-
-
+    
     var socket = await context.WebSockets.AcceptWebSocketAsync();
-
 
     var logs = context.RequestServices
         .GetRequiredService<LogsWebsocket>();
 
-
     await logs.HandleAsync(
+        socket,
+        context.RequestAborted
+    );
+});
+
+app.Map("/ws/services", async context =>
+{
+    if(!context.WebSockets.IsWebSocketRequest)
+    {
+        context.Response.StatusCode = 400;
+        return;
+    }
+    
+    var socket = await context.WebSockets.AcceptWebSocketAsync();
+
+    var ServiceWebsocket = context.RequestServices
+        .GetRequiredService<ServiceWebsocket>();
+
+    await ServiceWebsocket.HandleAsync(
         socket,
         context.RequestAborted
     );
