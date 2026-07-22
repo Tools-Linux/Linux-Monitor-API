@@ -1,5 +1,6 @@
 using Linux_Monitor_API.Controllers.Network;
 using Linux_Monitor_API.Services.CPU;
+using Linux_Monitor_API.Services.Logs;
 using Linux_Monitor_API.Services.Memory;
 using Linux_Monitor_API.Websocket;
 
@@ -29,6 +30,8 @@ builder.Services.AddCors(options =>
 builder.Services.AddSingleton<CpuServices>();
 builder.Services.AddSingleton<MemoryServices>();
 builder.Services.AddSingleton<DashboardWebSocket>();
+builder.Services.AddSingleton<LogsWebsocket>();
+builder.Services.AddSingleton<LogsServices>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
@@ -63,6 +66,23 @@ app.Map("/ws/dashboard", async context =>
 
     await dashboard.HandleAsync(socket, context.RequestAborted);
 });
+
+app.Map("/ws/logs", async context =>
+{
+    if (!context.WebSockets.IsWebSocketRequest)
+    {
+        context.Response.StatusCode = 400;
+        return;
+    }
+
+    var socket = await context.WebSockets.AcceptWebSocketAsync();
+
+    var logsWebsocket = context.RequestServices
+        .GetRequiredService<LogsWebsocket>();
+
+    await logsWebsocket.HandleAsync(socket, context.RequestAborted);
+});
+
 
 app.MapControllers();
 
