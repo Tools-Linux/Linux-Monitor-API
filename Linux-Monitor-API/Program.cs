@@ -1,5 +1,6 @@
 using Linux_Monitor_API.Services.CPU;
 using Linux_Monitor_API.Services.Disk;
+using Linux_Monitor_API.Services.Information;
 using Linux_Monitor_API.Services.Logs;
 using Linux_Monitor_API.Services.Memory;
 using Linux_Monitor_API.Websocket;
@@ -33,6 +34,7 @@ builder.Services.AddSingleton<DashboardWebSocket>();
 builder.Services.AddSingleton<LogsWebsocket>();
 builder.Services.AddSingleton<LogsServices>();
 builder.Services.AddSingleton<DiskServices>();
+builder.Services.AddSingleton<InformationServices>();
 builder.Services.AddSingleton<Linux_Monitor_API.Services.Services.ProcessManager>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

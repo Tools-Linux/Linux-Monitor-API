@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Linux-Monitor-API")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+943aec5aa468a1d3356b2acdcef575099693c9ba")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+80110c76d1b8d6a816ad873a6fa98a1b8b072e65")]
 [assembly: System.Reflection.AssemblyProductAttribute("Linux-Monitor-API")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Linux-Monitor-API")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

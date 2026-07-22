@@ -1,20 +1,20 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\maell\\Pictures\\Linux-Monitor-API\\Linux-Monitor-API\\Linux-Monitor-API.csproj": {}
+    "E:\\github\\Linux-Monitor-API\\Linux-Monitor-API\\Linux-Monitor-API.csproj": {}
   },
   "projects": {
-    "C:\\Users\\maell\\Pictures\\Linux-Monitor-API\\Linux-Monitor-API\\Linux-Monitor-API.csproj": {
+    "E:\\github\\Linux-Monitor-API\\Linux-Monitor-API\\Linux-Monitor-API.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\maell\\Pictures\\Linux-Monitor-API\\Linux-Monitor-API\\Linux-Monitor-API.csproj",
+        "projectUniqueName": "E:\\github\\Linux-Monitor-API\\Linux-Monitor-API\\Linux-Monitor-API.csproj",
         "projectName": "Linux-Monitor-API",
-        "projectPath": "C:\\Users\\maell\\Pictures\\Linux-Monitor-API\\Linux-Monitor-API\\Linux-Monitor-API.csproj",
-        "packagesPath": "C:\\Users\\maell\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\maell\\Pictures\\Linux-Monitor-API\\Linux-Monitor-API\\obj\\",
+        "projectPath": "E:\\github\\Linux-Monitor-API\\Linux-Monitor-API\\Linux-Monitor-API.csproj",
+        "packagesPath": "C:\\Users\\romzy\\.nuget\\packages\\",
+        "outputPath": "E:\\github\\Linux-Monitor-API\\Linux-Monitor-API\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "C:\\Users\\maell\\AppData\\Roaming\\NuGet\\NuGet.Config"
+          "C:\\Users\\romzy\\AppData\\Roaming\\NuGet\\NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
@@ -71,7 +71,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Users\\maell\\.dotnet\\sdk\\8.0.401/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Users\\romzy\\.dotnet\\sdk\\8.0.422/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
