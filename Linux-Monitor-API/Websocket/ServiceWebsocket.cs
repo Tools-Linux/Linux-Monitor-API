@@ -31,13 +31,12 @@ public class ServiceWebsocket
         {
             while(socket.State == WebSocketState.Open)
             {
-                var logs = await _serviceManager.GetProcesses();
-
+                var services = await _serviceManager.GetProcesses();
 
                 await SendAsync(socket,new
                 {
                     type="logs",
-                    logs
+                    services
                 });
 
 
