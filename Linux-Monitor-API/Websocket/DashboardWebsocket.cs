@@ -38,7 +38,6 @@ public class DashboardWebSocket
             {
                 var memory = await _memoryService.GetAsync();
                 var cpu = await _cpusServices.Get();
-                var logs = await _logsServices.Get();
 
 
                 await BroadcastAsync(new
@@ -46,7 +45,6 @@ public class DashboardWebSocket
                     type = "dashboard",
                     memory,
                     cpu,
-                    logs
                 });
 
 
