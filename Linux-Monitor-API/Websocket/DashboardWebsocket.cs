@@ -40,8 +40,8 @@ public class DashboardWebSocket
                 await BroadcastAsync(new
                 {
                     type = "dashboard",
-                    memory = memory,
-                    cpu = cpu
+                    memory,
+                    cpu
                 });
 
 
