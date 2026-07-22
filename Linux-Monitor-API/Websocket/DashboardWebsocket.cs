@@ -3,6 +3,7 @@ using System.Net.WebSockets;
 using System.Text;
 using System.Text.Json;
 using Linux_Monitor_API.Services.CPU;
+using Linux_Monitor_API.Services.Disk;
 using Linux_Monitor_API.Services.Logs;
 using Linux_Monitor_API.Services.Memory;
 
@@ -12,15 +13,15 @@ public class DashboardWebSocket
 {
     private readonly MemoryServices _memoryService;
     private readonly CpuServices _cpusServices;
-    private readonly LogsServices _logsServices;
+    private readonly DiskServices _diskServices;
 
     private readonly ConcurrentBag<WebSocket> _clients = new();
 
-    public DashboardWebSocket(MemoryServices memoryService, CpuServices cpusServices, LogsServices logsServices)
+    public DashboardWebSocket(MemoryServices memoryService, CpuServices cpusServices, DiskServices diskServices)
     {
         _memoryService = memoryService;
         _cpusServices = cpusServices;
-        _logsServices = logsServices;
+        _diskServices = diskServices;
     }
 
 
@@ -38,6 +39,7 @@ public class DashboardWebSocket
             {
                 var memory = await _memoryService.GetAsync();
                 var cpu = await _cpusServices.Get();
+                var disk = await _diskServices.Get();
 
 
                 await BroadcastAsync(new
@@ -45,6 +47,7 @@ public class DashboardWebSocket
                     type = "dashboard",
                     memory,
                     cpu,
+                    disk
                 });
 
 
