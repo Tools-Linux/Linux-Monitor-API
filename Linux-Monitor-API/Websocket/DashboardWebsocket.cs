@@ -60,7 +60,7 @@ public class DashboardWebSocket
                 });
 
 
-                await Task.Delay(1000, cancellationToken);
+                await Task.Delay(2000, cancellationToken);
             }
         }
         catch(Exception ex)
