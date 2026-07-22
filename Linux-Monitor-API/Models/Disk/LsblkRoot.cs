@@ -1,5 +1,7 @@
 ﻿using System.Text.Json.Serialization;
 
+namespace Linux_Monitor_API.Models.Disk;
+
 public class LsblkDevice
 {
     [JsonPropertyName("name")]

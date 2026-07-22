@@ -1,69 +1,106 @@
 ﻿using System.Diagnostics;
 using System.Text.Json;
-using Microsoft.AspNetCore.Mvc;
 
-namespace Linux_Monitor_API.Controllers.Logs;
+namespace Linux_Monitor_API.Services.Logs;
 
-[ApiController]
-[Route("api/logs")]
-public class LogsServices : ControllerBase
+public class LogsServices
 {
-    [HttpGet]
-    public IActionResult Get()
+    public async Task<object> Get(int count = 100)
     {
         var process = Process.Start(new ProcessStartInfo
         {
             FileName = "journalctl",
-            Arguments = "-n 100 --no-pager --output=json",
+            Arguments = $"-n {count} --no-pager --output=json",
             RedirectStandardOutput = true,
             UseShellExecute = false
         });
 
-        string output = process!.StandardOutput.ReadToEnd();
-        process.WaitForExit();
+        if (process == null)
+            return new { logs = Array.Empty<object>() };
+        
+        var output = await process.StandardOutput.ReadToEndAsync();
+        await process.WaitForExitAsync();
 
         var logs = output
             .Split('\n', StringSplitOptions.RemoveEmptyEntries)
-            .Select(line =>
-            {
-                var json = JsonDocument.Parse(line).RootElement;
-
-                return new
-                {
-                    timestamp = json.TryGetProperty("__REALTIME_TIMESTAMP", out var time)
-                        ? DateTimeOffset.FromUnixTimeMilliseconds(
-                            long.Parse(time.GetString()!) / 1000
-                        )
-                        : DateTimeOffset.Now,
-
-                    level = json.TryGetProperty("PRIORITY", out var priority)
-                        ? priority.GetString() switch
-                        {
-                            "0" or "1" or "2" or "3" => "ERROR",
-                            "4" => "WARNING",
-                            "5" or "6" => "INFO",
-                            _ => "DEBUG"
-                        }
-                        : "UNKNOWN",
-
-                    service = json.TryGetProperty("_SYSTEMD_UNIT", out var unit)
-                        ? unit.GetString()
-                        : "system",
-
-                    pid = json.TryGetProperty("_PID", out var pid)
-                        ? pid.GetString()
-                        : null,
-
-                    message = json.TryGetProperty("MESSAGE", out var msg)
-                        ? msg.GetString()
-                        : ""
-                };
-            })
+            .Select(ParseLog)
+            .Reverse()
             .ToList();
-        
-        return Ok(new
+
+
+        return new
         {
+            count = logs.Count,
             logs
-        });
+        };
+    }
+    
+    private static object ParseLog(string line)
+    {
+        try
+        {
+            using var json = JsonDocument.Parse(line);
+
+            var root = json.RootElement;
+
+
+            return new
+            {
+                timestamp = GetTimestamp(root),
+                level = GetLevel(root),
+                
+                service = root.TryGetProperty("_SYSTEMD_UNIT", out var unit)
+                    ? unit.GetString()
+                    : "system",
+
+                pid = root.TryGetProperty("_PID", out var pid)
+                    ? pid.GetString()
+                    : null,
+
+                message = root.TryGetProperty("MESSAGE", out var msg)
+                    ? msg.GetString()
+                    : ""
+            };
+        }
+        catch
+        {
+            return new
+            {
+                timestamp = DateTimeOffset.Now,
+                level = "UNKNOWN",
+                service = "system",
+                pid = "",
+                message = line
+            };
+        }
+    }
+    
+    private static DateTimeOffset GetTimestamp(JsonElement json)
+    {
+        if(!json.TryGetProperty(
+            "__REALTIME_TIMESTAMP",
+            out var time))
+            return DateTimeOffset.Now;
+        
+        if(long.TryParse(time.GetString(), out var micro))
+        {
+            return DateTimeOffset.FromUnixTimeMilliseconds(micro / 1000);
+        }
+        
+        return DateTimeOffset.Now;
+    }
+
+    private static string GetLevel(JsonElement json)
+    {
+        if(!json.TryGetProperty("PRIORITY", out var priority)) return "UNKNOWN";
+
+        return priority.GetString() switch
+        {
+            "0" or "1" or "2" or "3" => "ERROR",
+            "4" => "WARNING",
+            "5" or "6" => "INFO",
+            "7" => "DEBUG",
+            _ => "UNKNOWN"
+        };
     }
 }
