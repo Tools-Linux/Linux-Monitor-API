@@ -3,6 +3,7 @@ using Linux_Monitor_API.Services.Disk;
 using Linux_Monitor_API.Services.Information;
 using Linux_Monitor_API.Services.Logs;
 using Linux_Monitor_API.Services.Memory;
+using Linux_Monitor_API.Services.Network;
 using Linux_Monitor_API.Websocket;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,6 +35,7 @@ builder.Services.AddSingleton<DashboardWebSocket>();
 builder.Services.AddSingleton<LogsWebsocket>();
 builder.Services.AddSingleton<LogsServices>();
 builder.Services.AddSingleton<DiskServices>();
+builder.Services.AddSingleton<NetworkServices>();
 builder.Services.AddSingleton<InformationServices>();
 builder.Services.AddSingleton<Linux_Monitor_API.Services.Services.ProcessManager>();
 builder.Services.AddEndpointsApiExplorer();
