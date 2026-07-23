@@ -39,6 +39,7 @@ builder.Services.AddSingleton<DiskServices>();
 builder.Services.AddSingleton<NetworkServices>();
 builder.Services.AddSingleton<InformationServices>();
 builder.Services.AddSingleton<ServicesManager>();
+builder.Services.AddSingleton<ServiceWebsocket>();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
