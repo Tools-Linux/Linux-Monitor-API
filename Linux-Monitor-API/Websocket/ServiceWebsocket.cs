@@ -9,10 +9,10 @@ namespace Linux_Monitor_API.Websocket;
 
 public class ServiceWebsocket
 {
-    private readonly ProcessManager _serviceManager;
+    private readonly ServicesManager _serviceManager;
     private readonly ConcurrentBag<WebSocket> _clients = new();
 
-    public ServiceWebsocket(ProcessManager serviceManager)
+    public ServiceWebsocket(ServicesManager serviceManager)
     {
         _serviceManager = serviceManager;
     }

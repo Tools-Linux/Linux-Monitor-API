@@ -2,7 +2,7 @@
 
 namespace Linux_Monitor_API.Services.Services;
 
-public class ProcessManager
+public class ServicesManager
 {
     public async Task<List<object>> GetProcesses()
     {

@@ -7,9 +7,9 @@ namespace Linux_Monitor_API.Controllers.Services;
 [Route("api/processes")]
 public class ProcessesController : ControllerBase
 {
-    private readonly ProcessManager _manager;
+    private readonly ServicesManager _manager;
 
-    public ProcessesController(ProcessManager manager)
+    public ProcessesController(ServicesManager manager)
     {
         _manager = manager;
     }
