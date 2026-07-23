@@ -35,7 +35,7 @@ public class ServiceWebsocket
 
                 await SendAsync(socket,new
                 {
-                    type="logs",
+                    type="services",
                     services
                 });
 
