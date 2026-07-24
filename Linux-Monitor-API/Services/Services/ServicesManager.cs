@@ -4,14 +4,14 @@ namespace Linux_Monitor_API.Services.Services;
 
 public class ServicesManager
 {
-    public async Task<List<object>> GetProcesses()
+    public async Task<List<object>> GetServices()
     {
         var process = new Process
         {
             StartInfo = new ProcessStartInfo
             {
-                FileName = "ps",
-                Arguments = "-eo pid,user,state,comm,%cpu,rss,lstart --no-headers",
+                FileName = "systemctl",
+                Arguments = "list-units --type=service --all --no-legend --no-pager",
                 RedirectStandardOutput = true,
                 UseShellExecute = false,
                 CreateNoWindow = true
@@ -23,43 +23,26 @@ public class ServicesManager
         string output = await process.StandardOutput.ReadToEndAsync();
         await process.WaitForExitAsync();
 
-        var processes = output
+        var services = output
             .Split('\n', StringSplitOptions.RemoveEmptyEntries)
             .Select(line =>
             {
                 var parts = line.Split(' ', StringSplitOptions.RemoveEmptyEntries);
 
-                if (parts.Length < 7)
+                if (parts.Length < 5)
                     return null;
-
-                int.TryParse(parts[0], out int pid);
-
-                double.TryParse(
-                    parts[4],
-                    System.Globalization.NumberStyles.Any,
-                    System.Globalization.CultureInfo.InvariantCulture,
-                    out double cpu
-                );
-
-                double.TryParse(parts[5], out double rss);
 
                 return new
                 {
-                    pid,
-                    user = parts[1],
-                    state = parts[2].Substring(0, 1),
-                    command = parts[3],
-                    cpu,
-                    memMB = Math.Round(rss / 1024, 1),
-                    started = string.Join(" ", parts.Skip(6))
+                    name = parts[0],
+                    state = parts[2],
+                    sub = parts[3]
                 };
             })
-            .Where(p => p != null)
-            .OrderByDescending(p => p!.cpu)
-            .Take(200)
+            .Where(x => x != null)
             .Cast<object>()
             .ToList();
 
-        return processes;
+        return services;
     }
 }

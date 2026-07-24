@@ -31,7 +31,7 @@ public class ServiceWebsocket
         {
             while(socket.State == WebSocketState.Open)
             {
-                var services = await _serviceManager.GetProcesses();
+                var services = await _serviceManager.GetServices();
 
                 await SendAsync(socket,new
                 {

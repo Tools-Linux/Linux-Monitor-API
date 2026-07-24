@@ -17,7 +17,7 @@ public class ProcessesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> Get()
     {
-        var processes = await _manager.GetProcesses();
+        var processes = await _manager.GetServices();
 
         return Ok(new
         {
